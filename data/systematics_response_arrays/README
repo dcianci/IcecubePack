@@ -1,0 +1,52 @@
+/systematics_response_arrays:
+==============================
+
+In order to assess systematic uncertainties due to detector effects we also
+provide the response arrays for different non-nominal detector configurations.
+
+The following list of systematic sets are provided:
+
+- DOM efficiency variants: 0.9, 0.95, 1.089, and 1.1979.
+- SPICELEA ice model.
+- SPICEMIE icevariant1 (+10% scattering) and icevariant2 (+10% absorption).
+- SPICEMIE ice model with no hole ice.
+
+For reference, we also provide the nominal response array:
+
+- SPICEMIE ice model with 0.99 DOM efficiency.
+
+These arrays, which have units of GeV cm^2 s sr, have the following indexes:
+
+T_{mu_e,cth,nu_e}
+
+where mu_e is the index that represent the reconstructed muon energy bin, 
+cth to the cos(th) bin, and nu_e corresponds to the true neutrino energy bin.
+
+In order to estimate the total number of events in a given reconstructed
+quantities bin one has to perform the following convolution:
+
+N_{mu_e,cth} = T_{mu_e,cth,nu_e} * Phi{cth,nu_e}	...(1)
+
+where in the right hand side summation over the repeated nu_e index is assumed
+and Phi corresponds to the average neutrino flux in the bin with indices cth
+and nu_e.
+
+In order to facilitate the convolution given in equation (1) we also provide
+the average per bin fluxes in the same binning in atmospheric_flux/averaged/
+directory for the models used in the analysis.
+
+The arrays are given in HDF5 format and have the following data sets:
+
+antineutrino_response_array 	Dataset {10, 21, 200}
+neutrino_response_array 	Dataset {10, 21, 200}
+costh_bin_edges          	Dataset {22}
+proxy_energy_bin_edges   	Dataset {11}
+true_energy_bin_edges    	Dataset {201}
+
+where the numbers in braces are the sizes along each dimension of the set.
+
+Finally, it is important to note that neutrino_response_array must be
+convolved with the corresponding average neutrino fluxes and the 
+antineutrino_response_array with the corresponding average antineutrino fluxes.
+Then to compare to the data, one must add the resulting products.
+

@@ -1,0 +1,20 @@
+Hey there friends!
+
+This is a bit annoying to do locally and I haven't come up with a good way to automate it, but if you follow these steps, it should build!
+
+1) Clone in SQuIDS
+git clone https://github.com/jsalvado/SQuIDS.git
+
+2) Follow instructions to build it! It should be pretty clean and easy.
+
+3) Clone in nuSQuIDS
+git clone https://github.com/arguelles/nuSQuIDS.git
+
+4) Follow instructions to build it! This one is a bit trickier! It has some dependencies. 
+You need to make sure you have hdf5 installed (find it here https://www.hdfgroup.org/downloads/hdf5/source-code/)
+And you need to make sure nuSQuIDS knows where hdf5 and SQuIDS live, which you can do as a configure option.
+
+5) Fix up the makefile in this directory with the SQuIDS and nuSQuIDS locations. Hopefully the hdf5 stuff is alright,  but if something goes wrong, that's the first place to look.
+
+6) Build it all!
+make -f makefile
