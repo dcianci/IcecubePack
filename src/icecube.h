@@ -8,7 +8,27 @@
 
 #include "nuSQuIDS/nuSQuIDS.h"
 
-std::array < std::array < std::array < float,200 >,21 >, 10 > syst_resp_array_nu_high, syst_resp_array_nubar_high, syst_resp_array_nu_low, syst_resp_array_nubar_low;
+#include "TStopwatch.h"
 
-std::array < std::array < std::array < float,200 >,21 >, 10 > interpSystRespArray_nu(float eff);
-std::array < std::array < std::array < float,200 >,21 >, 10 > interpSystRespArray_nubar(float eff);
+#include "Math/Minimizer.h"
+#include "Math/Factory.h"
+#include "Math/Functor.h"
+
+#include "Math/GSLMinimizer.h"
+#include "Math/GSLSimAnMinimizer.h"
+
+std::array < std::array < float,40 >, 150 > nuflux_init_pion, nuflux_init_kaon, nubarflux_init_pion, nubarflux_init_kaon;
+std::array < std::array < float,21 >, 10 > data, mc;
+
+int nmc = 8784618;
+bool debug;
+float mcscale;
+
+squids::Const units;
+float Etrue_min(2.e2*units.GeV), Etrue_max(1.e6*units.GeV), CZ_min(-1.), CZ_max(.24),Ereco_min(400.*units.GeV),Ereco_max(20000*units.GeV);
+std::vector < int > vec_mc_pid;
+std::vector < float > vec_mc_reco_energy, vec_mc_reco_cos_zenith, vec_mc_true_nu_energy, vec_mc_true_cos_zenith, vec_mc_weight;
+std::vector < float > vec_mc_flux_pion_osc, vec_mc_flux_kaon_osc;
+
+float logfactorial(int i);
+double ICMinimizer(const double * X);
