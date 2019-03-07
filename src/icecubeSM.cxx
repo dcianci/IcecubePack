@@ -2,9 +2,6 @@
 
 using namespace nusquids;
 
-
-	std::array < float,11 > binedges;
-
 int nuflux(){
 
 	debug = false;
@@ -20,14 +17,18 @@ int nuflux(){
 	vec_mc_flux_kaon_osc.resize(nmc);
 	vec_mc_flux_pion_osc.resize(nmc);
 
-	////////////////////////////////////////////////////////
+	vec_mc_flux_kaon_nom.resize(nmc);
+	vec_mc_flux_pion_nom.resize(nmc);
+	
+
+////////////////////////////////////////////////////////
 	// First, let's read everything in
 	////////////////////////////////////////////////////////
 
 	std::cout << "Load up initial fluxes" << std::endl;
 	// Load in atmospheric fluxes
-	std::ifstream file;
 	float dummy;
+	std::ifstream file;
 	file.open("data/initial_pion_atmopheric_HondaGaisser.dat");
 	for(int cz = 0; cz < 40; cz++){				// cos zenith angle
 		for(int te = 0; te < 150; te++){		// true nu energy
@@ -64,25 +65,20 @@ int nuflux(){
 	// load in mc!
 	file.open("data/NuFSGenMC_nominal.dat");
 	for(int i = 0; i < nmc; i++){
-		file >> vec_mc_pid[i];
+ 		file >> vec_mc_pid[i];
 		file >> vec_mc_reco_energy[i];
 		file >> vec_mc_reco_cos_zenith[i];
 		file >> vec_mc_true_nu_energy[i];
 		file >> vec_mc_true_cos_zenith[i];
 		file >> vec_mc_weight[i];
-		file >> dummy;
-		file >> dummy;
+		file >> vec_mc_flux_pion_nom[i];
+		file >> vec_mc_flux_kaon_nom[i];
 	}
 	file.close();
 
 	if(debug)
 		std::cout << vec_mc_pid[0] << " " << vec_mc_reco_energy[0] << " " << vec_mc_reco_cos_zenith[0] << " " << vec_mc_true_nu_energy[0] << " " << vec_mc_true_cos_zenith[0] << " " << vec_mc_weight[0] << std::endl;
 
-	// Create list of reco energy bin edges for later
-	for(int i = 0; i < 11; i ++){
-		binedges[i] = pow(10,log10(Ereco_min) + i*log10(Ereco_max/Ereco_min)/10.f);
-		std::cout << "BE: " << binedges[i] << std::endl;
-	}
 
 	//////////////////////////////////////////////////////////////
 	// Propagate your fluxes through the earth!
@@ -113,12 +109,8 @@ int nuflux(){
 	nus_atm_pion.Set_GSL_step(gsl_odeiv2_step_rk4);		nus_atm_kaon.Set_GSL_step(gsl_odeiv2_step_rk4);
 
 	// Setup SM mixing params
-	nus_atm_pion.Set_MixingAngle(0,1,0.563942);				nus_atm_kaon.Set_MixingAngle(0,1,0.563942);
-	nus_atm_pion.Set_MixingAngle(0,2,0.154085);				nus_atm_kaon.Set_MixingAngle(0,2,0.154085);
-	nus_atm_pion.Set_MixingAngle(1,2,0.785398);				nus_atm_kaon.Set_MixingAngle(1,2,0.785398);
-	nus_atm_pion.Set_SquareMassDifference(1,7.65e-05);nus_atm_kaon.Set_SquareMassDifference(1,7.65e-05);
-	nus_atm_pion.Set_SquareMassDifference(2,0.00247);	nus_atm_kaon.Set_SquareMassDifference(2,0.00247);
-	nus_atm_pion.Set_CPPhase(0,2,0);									nus_atm_kaon.Set_CPPhase(0,2,0);
+	nus_atm_pion.Set_MixingParametersToDefault();
+	nus_atm_kaon.Set_MixingParametersToDefault();
 
 	if(debug)
 		nus_atm_pion.Set_ProgressBar(true);
@@ -157,7 +149,7 @@ int nuflux(){
 	float R_kpi(1), R_nunubar(1), Knorm(1), eff(.99), CRindex(0);
 
 	ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("GSLMultiMin","BFGS2");
-	min->SetMaxIterations(10000);  // for GSL
+	min->SetMaxIterations(1000);  // for GSL
 	min->SetPrintLevel(1);
 	min->SetPrecision(0.001);			//times 4 for normal
 
@@ -167,20 +159,47 @@ int nuflux(){
 	// set vars
 	// for now, just throw some fixed variables to make sure it's all good.
 	min->SetVariable(0,"R_kpi",1., .01);
-	min->SetVariableLimits(0,.7,1.3);
+	min->SetVariableLimits(0,0.,2.);//.7,1.3);
 	min->SetVariable(1,"R_nunubar",1,.005);
-	min->SetVariableLimits(1,.925,1.075);
+	min->SetVariableLimits(1,.5,1.5);//.925,1.075);
 	min->SetVariable(2,"K_norm",1,.01);
-	min->SetVariableLimits(2,.9,1.1);
+	min->SetVariableLimits(2,.5,1.5);//.9,1.1);
 	min->SetFixedVariable(3,"eff",.99);
 	min->SetVariable(4,"CRindex",0,.01);
-	min->SetVariableLimits(4,0,.15);
+	min->SetVariableLimits(4,0,.5);//.15);
 	min->Minimize();
 
 	const double *xs = min->X();
 	std::cout << "Minimum: f(" << xs[0] << "," << xs[1] << "," << xs[2] << "," << xs[3] << "," << xs[4] << "): "  << min->MinValue()  << std::endl;
 
-	return  1;
+
+	// Okay, let's see how things look after the fit?
+	for(int cz = 0; cz < 21; cz++)
+		for(int re = 0; re < 10; re++)
+			mc[re][cz] = 0;
+
+	float flux;
+	int ei,czi;
+	for(int i = 0; i < nmc; i++){
+		// figure out bin coords
+		ei = floor(10.f * log10(vec_mc_reco_energy[i]*units.GeV/Ereco_min) / log10(Ereco_max/Ereco_min));
+		czi = floor((vec_mc_reco_cos_zenith[i] + 1.02)/.06);
+
+		// get our flux
+		if(vec_mc_pid[i] > 0)
+			flux = xs[2] * (vec_mc_flux_pion_osc[i] + vec_mc_flux_kaon_osc[i] * xs[0] ) * pow(vec_mc_true_nu_energy[i]*units.GeV,-xs[4]);
+		else
+			flux = xs[2] * xs[1] * (vec_mc_flux_pion_osc[i] + vec_mc_flux_kaon_osc[i] * xs[0] ) * pow(vec_mc_true_nu_energy[i]*units.GeV,-xs[4]);
+			
+		// add the number of events to the bin!
+		mc[ei][czi] += flux * vec_mc_weight[i] / mcscale;
+	}
+	for(int cz = 0; cz < 21; cz++)
+		for(int re = 0; re < 10; re++)
+			std::cout << "D: " << re << " " << cz << " " << data[re][cz] << " " <<  mc[re][cz] << std::endl;
+
+
+	return 1;
 }
 
 double ICMinimizer(const double * X){
@@ -214,9 +233,8 @@ double ICMinimizer(const double * X){
 	// Okay. Now, let's calculate the log likelihood.
 	float loglikelihood = 0;
 	for(int cz = 0; cz < 21; cz++){
-		for(int re = 0; re < 10; re++){
+		for(int re = 0; re < 10; re++){	
 			std::cout << "B: " << re << " " << cz << " " << data[re][cz] << " " << mc[re][cz] << std::endl;
-			
 			float l1(0),l2(0),l3(0);
 			if(mc[re][cz] > 0)
 				l1 = data[re][cz] * log(mc[re][cz]);
@@ -224,14 +242,16 @@ double ICMinimizer(const double * X){
 			if(data[re][cz] > 0)
 				l3 = logfactorial(data[re][cz]);
 			
+			std::cout << "l1: " << l1 << " l2: " << l2  << " l3: " <<  l3 << std::endl;
 			loglikelihood += l1 - l2 - l3;	
 		}
 	}
 	// Now add the penalty terms!
-	std::cout << "PENALTY: " << .5 * pow(X[0]-1,2) / pow(.1,2) << " " << .5 * pow(X[1]-1,2) / pow(.05,2) << " " << .5 * pow(X[4]-0,2) / pow(.05,2) << std::endl;
 	loglikelihood += .5 * pow(X[0]-1,2) / pow(.1,2);
 	loglikelihood += .5 * pow(X[1]-1,2) / pow(.05,2);
 	loglikelihood += .5 * pow(X[4]-0,2) / pow(.05,2);
+	std::cout << "PENALTY: " << .5 * pow(X[0]-1,2) / pow(.1,2) << " " << .5 * pow(X[1]-1,2) / pow(.05,2) << " " << .5 * pow(X[4]-0,2) / pow(.05,2)  << std::endl;
+
 
 	std::cout << "BOOP" << std::endl;
 	std::cout << X[0] << " " << X[1]  << " " << X[2] << " " << X[3]  << " " << X[4] << std::endl;
