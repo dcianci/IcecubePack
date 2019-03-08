@@ -5,7 +5,7 @@ using namespace nusquids;
 int nuflux(){
 
 	debug = false;
-	mcscale = .01;
+	mcscale = .1;
 
 	// to save time, we can reduce our mc by a fraction and then scale the weights accordingly
 	nmc *= mcscale;
@@ -152,6 +152,7 @@ int nuflux(){
 	min->SetMaxIterations(1000);  // for GSL
 	min->SetPrintLevel(1);
 	min->SetPrecision(0.001);			//times 4 for normal
+	min->SetTolerance(0.01);
 
 	ROOT::Math::Functor f(&ICMinimizer, 5);
 	min->SetFunction(f);
@@ -159,14 +160,14 @@ int nuflux(){
 	// set vars
 	// for now, just throw some fixed variables to make sure it's all good.
 	min->SetVariable(0,"R_kpi",1., .01);
-	min->SetVariableLimits(0,0.,2.);//.7,1.3);
+	min->SetVariableLimits(0,.7,1.3);
 	min->SetVariable(1,"R_nunubar",1,.005);
-	min->SetVariableLimits(1,.5,1.5);//.925,1.075);
+	min->SetVariableLimits(1,.925,1.075);
 	min->SetVariable(2,"K_norm",1,.01);
-	min->SetVariableLimits(2,.5,1.5);//.9,1.1);
+	min->SetVariableLimits(2,.9,1.1);
 	min->SetFixedVariable(3,"eff",.99);
 	min->SetVariable(4,"CRindex",0,.01);
-	min->SetVariableLimits(4,0,.5);//.15);
+	min->SetVariableLimits(4,0,.15);
 	min->Minimize();
 
 	const double *xs = min->X();
@@ -197,7 +198,6 @@ int nuflux(){
 	for(int cz = 0; cz < 21; cz++)
 		for(int re = 0; re < 10; re++)
 			std::cout << "D: " << re << " " << cz << " " << data[re][cz] << " " <<  mc[re][cz] << std::endl;
-
 
 	return 1;
 }
@@ -243,7 +243,7 @@ double ICMinimizer(const double * X){
 				l3 = logfactorial(data[re][cz]);
 			
 			std::cout << "l1: " << l1 << " l2: " << l2  << " l3: " <<  l3 << std::endl;
-			loglikelihood += l1 - l2 - l3;	
+			loglikelihood += -l1 + l2 + l3;	
 		}
 	}
 	// Now add the penalty terms!
