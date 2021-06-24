@@ -1,6 +1,6 @@
 // This version of the code is specifically for producing the ntuples needed for comparison to DUNE
 //
-// That is to say, these ntuples won't be very good for plotting
+// That is to say, these ntuples won't be a viable comparison to plots in the IceCube paper
 // At this point, validation is done and we ain't changing the machinery
 
 // 12/11 - let's change some machinery! in this version, i'll add the nominal dom efficiency detector systematics. still not a fit, but closer to what we're lookin' for.
