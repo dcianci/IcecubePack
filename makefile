@@ -46,20 +46,5 @@ STAT_PRODUCT=lib/lib$(NAME).a
 DYN_PRODUCT=lib/lib$(NAME)$(DYN_SUFFIX)
 
 d1:	
-#	@$(CXX) $(CFLAGS) src/icecubeSM.cxx $(LDFLAGS) -o build/icecubeSM
-#	@$(CXX) $(CFLAGS) src/icecubeScan_angles.cxx $(LDFLAGS) -o build/icecubescan
-#	@$(CXX) $(CFLAGS) src/icecubeValidation_1d.cxx $(LDFLAGS) -o build/icecubevalidation_1d
-#	@$(CXX) $(CFLAGS) src/icecubeScan_angles_onlytheta24.cxx $(LDFLAGS) -o build/icecubescan_validation
-	@$(CXX) $(CFLAGS) src/icecubeScan_v0.cxx $(LDFLAGS) -o build/icecubescan_v0test
-	@$(CXX) $(CFLAGS) src/icecubeScan_v1.cxx $(LDFLAGS) -o build/icecubescan_FINAL_WDETSYS
-	@$(CXX) $(CFLAGS) src/icecubeScan_v1_rastersingle.cxx $(LDFLAGS) -o build/icecubescan_FINAL_DIAGNOSTIC
-#	@$(CXX) $(CFLAGS) src/icecubeScan_angles_SM.cxx $(LDFLAGS) -o build/icecubescan_sm
-#	@$(CXX) $(CFLAGS) src/icecube_mctest.cxx $(LDFLAGS) -o build/icecube_mctest
-	#@$(CXX) $(CFLAGS) src/icecubeScan_99domeff_angles_single.cxx $(LDFLAGS) -o build/icecubescan_single
-#	@$(CXX) $(CFLAGS) src/generateFluxes_angles.cxx $(LDFLAGS) -o build/genflux
-#	@$(CXX) $(CFLAGS) src/rasterscanner.cxx $(LDFLAGS) -o build/rasterScan
-#	@$(CXX) $(CFLAGS) src/chi2volume_marginalizer.cxx $(LDFLAGS) -o build/chi2volume_marginalize.cxx
-	@$(CXX) $(CFLAGS) src/rasterscanner_angles.cxx $(LDFLAGS) -o build/rasterScanAngle
-#	@$(CXX) $(CFLAGS) src/icecubesingle.cxx $(LDFLAGS) -o build/icecubeSingle
-#	@$(CXX) $(CFLAGS) src/icecubeSM_99domeff.cxx $(LDFLAGS) -o build/icecubeSM_99domeff
-#	@$(CXX) $(CFLAGS) src/icecubeSM_99domeff_mymin.cxx $(LDFLAGS) -o build/icecubeSM_99domeff_mymin
+	@$(CXX) $(CFLAGS) src/icecubeScan_v0.cxx $(LDFLAGS) -o build/icecubescan_v0
+	@$(CXX) $(CFLAGS) src/icecubeScan_v1.cxx $(LDFLAGS) -o build/icecubescan_v1
