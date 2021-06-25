@@ -161,7 +161,7 @@ int nuflux(int stindex){
 		ith3 = ((ind-im-ith1-ith2) % (dm2grd*th14grd*th24grd*th34grd))/(dm2grd*th14grd*th24grd);
 		std::cout << "DIM: " << im << " " << ith1 << " " << ith2 << " " << ith3 << std::endl;
 	
-		m41 = pow(10,(im+.5)/float(dm2grd)*log10(mnu_hibound/mnu_lowbound) + log10(mnu_lowbound));
+		m41 = pow(10,(im-1+.5)/float(dm2grd-2)*log10(mnu_hibound/mnu_lowbound) + log10(mnu_lowbound));
 		theta14 = pow(10,(ith1-1+.5)/float(th14grd-2)*log10(theta_hibound/theta_lowbound) + log10(theta_lowbound));
 		theta24 = pow(10,(ith2-1+.5)/float(th24grd-2)*log10(theta_hibound/theta_lowbound) + log10(theta_lowbound));
 		theta34 = pow(10,(ith3+.5)/float(th34grd)*log10(theta_hibound/theta_lowbound) + log10(theta_lowbound));
@@ -274,7 +274,7 @@ int nuflux(int stindex){
 				//std::cout << nit << " logl: (" << xpar[0] << ", " <<  xpar[1] << ", " << xpar[2] << "): " << logl << std::endl;
 			}
 		
-					
+		}					
 		std::cout << "logl: " << pow(m41,2) << " " << theta14 << " " << theta24 << " "  << theta34 << " " << d24 << " " << d34  << " " << logl_min << std::endl;
 	}
 	return  1;
